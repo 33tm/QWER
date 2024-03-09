@@ -11,13 +11,13 @@ int resolve(std::string package) {
         std::cerr << "Failed to initialize cURL" << std::endl;
         return 1;
     }
-    
+
     std::cout << "Installing " << package << "..." << std::endl;
 
     long status;
     std::string response;
 
-    curl_easy_setopt(curl, CURLOPT_URL, ("https://registry.npmjs.com/" + package).c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, ("https://registry.npmjs.org/" + package).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(
         curl,
