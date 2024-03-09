@@ -4,7 +4,11 @@ project(QWER)
 
 find_package(CURL REQUIRED)
 
-add_executable(QWER src/main.cpp)
+include_directories(include)
+
+file(GLOB SOURCES "src/*.cpp")
+
+add_executable(QWER ${SOURCES})
 
 add_subdirectory(lib/simdjson)
 
