@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "qwer.h"
+#include "install.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {

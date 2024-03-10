@@ -2,10 +2,10 @@
 #include <iostream>
 #include <string>
 
-#include "qwer.h"
+#include "resolve.h"
 #include "simdjson.h"
 
-int resolve(std::string package) {
+int resolve(const std::string &package) {
     CURL *curl = curl_easy_init();
     if (!curl) {
         std::cerr << "Failed to initialize cURL" << std::endl;
