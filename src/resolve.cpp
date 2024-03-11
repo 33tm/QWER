@@ -1,49 +1,74 @@
 #include <curl/curl.h>
-#include <iostream>
 #include <string>
+#include <vector>
 
+#include "install.h"
 #include "resolve.h"
 #include "simdjson.h"
 
-int resolve(const std::string &package) {
-    CURL *curl = curl_easy_init();
-    if (!curl) {
-        std::cerr << "Failed to initialize cURL" << std::endl;
-        return 1;
+static size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
+    userdata->append(ptr, size * nmemb);
+    return size * nmemb;
+}
+
+static std::string parse(auto input) {
+    return std::string(std::string_view(input).data());
+}
+
+std::vector<Resolution> resolve(const std::vector<Package> &packages) {
+    CURL *handles[packages.size()];
+    CURLM *curlm = curl_multi_init();
+    std::vector<std::string> responses(packages.size());
+    std::vector<Resolution> resolutions(packages.size());
+
+    // for (Package &package : packages) {
+    // TODO semver resolution
+    // mut package.version
+    // work on latest assumption
+    // continue;
+    // }
+
+    for (size_t i = 0; i < packages.size(); i++) {
+        handles[i] = curl_easy_init();
+        std::string url = "https://registry.npmjs.org/" + packages[i].name + "/" + packages[i].version;
+
+        curl_easy_setopt(handles[i], CURLOPT_URL, url.c_str());
+        curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
+        curl_easy_setopt(handles[i], CURLOPT_WRITEFUNCTION, *write);
+
+        curl_multi_add_handle(curlm, handles[i]);
     }
 
-    std::cout << "Installing " << package << "..." << std::endl;
+    int remaining;
 
-    long status;
-    std::string response;
-
-    curl_easy_setopt(curl, CURLOPT_URL, ("https://registry.npmjs.org/" + package).c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(
-        curl,
-        CURLOPT_WRITEFUNCTION,
-        +[](char *ptr, size_t size, size_t nmemb, std::string *userdata) {
-            userdata->append(ptr, size * nmemb);
-            return size * nmemb;
-        });
-
-    curl_easy_perform(curl);
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
-    curl_easy_cleanup(curl);
-
-    if (status != 200) {
-        std::cerr << "Package " << package << " not found" << std::endl;
-        return 1;
+    while (remaining) {
+        if (curl_multi_perform(curlm, &remaining)) {
+            break;
+        }
     }
+
+    for (CURL *handle : handles) {
+        curl_multi_remove_handle(curlm, handle);
+        curl_easy_cleanup(handle);
+    }
+
+    curl_multi_cleanup(curlm);
 
     simdjson::ondemand::parser parser;
-    simdjson::ondemand::document registry = parser.iterate(response);
 
-    auto version = registry["dist-tags"]["latest"];
-    auto target = registry["versions"][version];
+    for (const std::string &response : responses) {
+        auto json = simdjson::padded_string(response);
+        auto package = parser.iterate(json);
 
-    std::cout << "Installing " << package << "@" << version << std::endl;
-    std::cout << target["dist"]["tarball"] << std::endl;
+        Resolution resolution;
+        resolution.name = parse(package["name"]);
+        resolution.version = parse(package["version"]);
+        resolution.url = parse(package["dist"]["tarball"]);
+        resolution.hash = parse(package["dist"]["shasum"]);
+        // resolution.dependencies = std::vector<Package>();
 
-    return 0;
+        resolutions.push_back(resolution);
+    }
+
+    return resolutions;
 }

@@ -1,6 +1,11 @@
 #ifndef INSTALL_H
 #define INSTALL_H
 
-void install(const std::vector<std::string> &packages);
+struct Package {
+    std::string name;
+    std::string version;
+};
+
+void install(const std::vector<Package> &packages);
 
 #endif

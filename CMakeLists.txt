@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(QWER)
 
+set(CMAKE_CXX_STANDARD 23)
+
 find_package(CURL REQUIRED)
 
 include_directories(include)
