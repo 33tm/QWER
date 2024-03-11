@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<Package> packages;
 
+    packages.push_back({"next", "latest"});
     packages.push_back({"schoologyapi", "latest"});
 
     install(packages);

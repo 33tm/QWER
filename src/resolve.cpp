@@ -11,13 +11,9 @@ static size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata)
     return size * nmemb;
 }
 
-static std::string parse(auto input) {
-    return std::string(std::string_view(input).data());
-}
-
 std::vector<Resolution> resolve(const std::vector<Package> &packages) {
+    CURL *handles[packages.size()];
     CURLM *curlm = curl_multi_init();
-    std::vector<CURL *> handles(packages.size());
     std::vector<std::string> responses(packages.size());
     std::vector<Resolution> resolutions(packages.size());
 
@@ -37,7 +33,7 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
         curl_multi_add_handle(curlm, handles[i]);
     }
 
-    int remaining = 0;
+    int remaining;
 
     while (remaining) {
         if (curl_multi_perform(curlm, &remaining)) {
@@ -55,15 +51,31 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     simdjson::ondemand::parser parser;
 
     for (const std::string &response : responses) {
-        auto json = simdjson::padded_string(response);
-        auto package = parser.iterate(json);
+        simdjson::padded_string json = simdjson::padded_string(response);
+        simdjson::ondemand::document package = parser.iterate(json);
+
+        std::string name, version, url, hash;
+        std::vector<Package> dependencies;
+
+        package["name"].get_string(name);
+        package["version"].get_string(version);
+        package["dist"]["tarball"].get_string(url);
+        package["dist"]["shasum"].get_string(hash);
+        package["dependencies"].get_object();
+
+        for (auto dependency : package["dependencies"].get_object()) {
+            std::string name, version;
+            name = dependency.unescaped_key().value();
+            dependency.value().get_string(version);
+            dependencies.push_back({name, version});
+        }
 
         Resolution resolution;
-        resolution.name = parse(package["name"]);
-        resolution.version = parse(package["version"]);
-        resolution.url = parse(package["dist"]["tarball"]);
-        resolution.hash = parse(package["dist"]["shasum"]);
-        // resolution.dependencies = std::vector<Package>();
+        resolution.name = name;
+        resolution.version = version;
+        resolution.url = url;
+        resolution.hash = hash;
+        resolution.dependencies = dependencies;
 
         resolutions.push_back(resolution);
 
