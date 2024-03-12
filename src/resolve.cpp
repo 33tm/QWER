@@ -6,7 +6,7 @@
 #include "resolve.h"
 #include "simdjson.h"
 
-static size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
+size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
     userdata->append(ptr, size * nmemb);
     return size * nmemb;
 }
