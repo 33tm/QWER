@@ -4,9 +4,9 @@
 struct Resolution {
     std::string name;
     std::string version;
-    std::string url;
-    std::string hash;
     std::vector<Package> dependencies;
+    std::string hash;
+    std::string url;
 };
 
 std::vector<Resolution> resolve(const std::vector<Package> &packages);

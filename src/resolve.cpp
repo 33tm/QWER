@@ -51,35 +51,34 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     simdjson::ondemand::parser parser;
 
     for (const std::string &response : responses) {
-        simdjson::padded_string json = simdjson::padded_string(response);
+        simdjson::padded_string json(response);
         simdjson::ondemand::document package = parser.iterate(json);
 
-        std::string name, version, url, hash;
-        std::vector<Package> dependencies;
+        Resolution resolution;
 
-        package["name"].get_string(name);
-        package["version"].get_string(version);
-        package["dist"]["tarball"].get_string(url);
-        package["dist"]["shasum"].get_string(hash);
-        package["dependencies"].get_object();
+        package["name"].get_string(resolution.name);
+        package["version"].get_string(resolution.version);
 
-        for (auto dependency : package["dependencies"].get_object()) {
-            std::string name, version;
-            name = dependency.unescaped_key().value();
-            dependency.value().get_string(version);
-            dependencies.push_back({name, version});
+        simdjson::ondemand::object dependencies;
+        simdjson::error_code error = package["dependencies"].get(dependencies);
+
+        if (!error) {
+            for (auto dependency : dependencies) {
+                Package package;
+                package.name = std::string(dependency.unescaped_key().value());
+                dependency.value().get_string(package.version);
+                resolution.dependencies.push_back(package);
+            }
         }
 
-        Resolution resolution;
-        resolution.name = name;
-        resolution.version = version;
-        resolution.url = url;
-        resolution.hash = hash;
-        resolution.dependencies = dependencies;
+        package["dist"]["shasum"].get_string(resolution.hash);
+        package["dist"]["tarball"].get_string(resolution.url);
+
+        for (Package &package : resolution.dependencies) {
+            std::cout << package.name << " " << package.version << std::endl;
+        }
 
         resolutions.push_back(resolution);
-
-        std::cout << resolution.name << "@" << resolution.version << std::endl;
     }
 
     return resolutions;
