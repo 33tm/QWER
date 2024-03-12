@@ -28,8 +28,8 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
         handles[i] = curl_easy_init();
         std::string url = "https://registry.npmjs.org/" + packages[i].name + "/" + packages[i].version;
         curl_easy_setopt(handles[i], CURLOPT_URL, url.c_str());
-        curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
         curl_easy_setopt(handles[i], CURLOPT_WRITEFUNCTION, *write);
+        curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
         curl_multi_add_handle(curlm, handles[i]);
     }
 
@@ -73,10 +73,6 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
 
         package["dist"]["shasum"].get_string(resolution.hash);
         package["dist"]["tarball"].get_string(resolution.url);
-
-        for (Package &package : resolution.dependencies) {
-            std::cout << package.name << " " << package.version << std::endl;
-        }
 
         resolutions.push_back(resolution);
     }
