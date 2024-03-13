@@ -14,8 +14,8 @@ size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
 std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     CURL *handles[packages.size()];
     CURLM *curlm = curl_multi_init();
-    std::vector<std::string> responses(packages.size());
-    std::vector<Resolution> resolutions(packages.size());
+    std::vector<Resolution> resolutions;
+    std::string responses[packages.size()];
 
     // for (Package &package : packages) {
     // TODO semver resolution
@@ -63,15 +63,17 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
         simdjson::error_code error = package["dependencies"].get(dependencies);
 
         if (!error) {
+            std::vector<Package> packages;
             for (auto dependency : dependencies) {
                 Package package;
                 package.name = std::string(dependency.unescaped_key().value());
                 dependency.value().get_string(package.version);
-                resolution.dependencies.push_back(package);
+                packages.push_back(package);
             }
+            // std::vector<Resolution> inner = resolve(packages);
+            // resolutions.insert(resolutions.end(), inner.begin(), inner.end());
         }
 
-        package["dist"]["shasum"].get_string(resolution.hash);
         package["dist"]["tarball"].get_string(resolution.url);
 
         resolutions.push_back(resolution);

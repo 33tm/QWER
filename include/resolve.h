@@ -4,8 +4,6 @@
 struct Resolution {
     std::string name;
     std::string version;
-    std::vector<Package> dependencies;
-    std::string hash;
     std::string url;
 };
 
