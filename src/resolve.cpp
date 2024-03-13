@@ -63,13 +63,13 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
         simdjson::error_code error = package["dependencies"].get(dependencies);
 
         if (!error) {
-            std::vector<Package> packages;
-            for (auto dependency : dependencies) {
-                Package package;
-                package.name = std::string(dependency.unescaped_key().value());
-                dependency.value().get_string(package.version);
-                packages.push_back(package);
-            }
+            // std::vector<Package> packages;
+            // for (auto dependency : dependencies) {
+            //     Package package;
+            //     package.name = std::string(dependency.unescaped_key().value());
+            //     dependency.value().get_string(package.version);
+            //     packages.push_back(package);
+            // }
             // std::vector<Resolution> inner = resolve(packages);
             // resolutions.insert(resolutions.end(), inner.begin(), inner.end());
         }
