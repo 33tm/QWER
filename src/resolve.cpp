@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 
+#include "glaze/glaze.hpp"
 #include "install.h"
 #include "resolve.h"
-#include "simdjson.h"
 
 size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
     userdata->append(ptr, size * nmemb);
@@ -25,8 +25,9 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     // }
 
     for (size_t i = 0; i < packages.size(); i++) {
+        Package package = packages[i];
         handles[i] = curl_easy_init();
-        std::string url = "https://registry.npmjs.org/" + packages[i].name + "/" + packages[i].version;
+        std::string url = "https://registry.npmjs.org/" + package.name + "/" + package.version;
         curl_easy_setopt(handles[i], CURLOPT_URL, url.c_str());
         curl_easy_setopt(handles[i], CURLOPT_WRITEFUNCTION, *write);
         curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
@@ -48,34 +49,9 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
 
     curl_multi_cleanup(curlm);
 
-    simdjson::ondemand::parser parser;
-
     for (const std::string &response : responses) {
-        simdjson::padded_string json(response);
-        simdjson::ondemand::document package = parser.iterate(json);
-
         Resolution resolution;
-
-        package["name"].get_string(resolution.name);
-        package["version"].get_string(resolution.version);
-
-        simdjson::ondemand::object dependencies;
-        simdjson::error_code error = package["dependencies"].get(dependencies);
-
-        if (!error) {
-            // std::vector<Package> packages;
-            // for (auto dependency : dependencies) {
-            //     Package package;
-            //     package.name = std::string(dependency.unescaped_key().value());
-            //     dependency.value().get_string(package.version);
-            //     packages.push_back(package);
-            // }
-            // std::vector<Resolution> inner = resolve(packages);
-            // resolutions.insert(resolutions.end(), inner.begin(), inner.end());
-        }
-
-        package["dist"]["tarball"].get_string(resolution.url);
-
+        glz::read_json(resolution, response);
         resolutions.push_back(resolution);
     }
 

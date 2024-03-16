@@ -1,3 +1,0 @@
-[submodule "lib/simdjson"]
-    path = lib/simdjson
-	url = https://github.com/simdjson/simdjson.git

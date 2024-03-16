@@ -4,14 +4,22 @@ project(QWER)
 
 set(CMAKE_CXX_STANDARD 23)
 
-find_package(CURL REQUIRED)
-
 include_directories(include)
 
 file(GLOB SOURCES src/*.cpp)
 
 add_executable(QWER ${SOURCES})
 
-add_subdirectory(lib/simdjson)
+find_package(CURL REQUIRED)
 
-target_link_libraries(QWER CURL::libcurl simdjson)
+include(FetchContent)
+
+FetchContent_Declare(glaze
+    GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(glaze)
+
+target_link_libraries(QWER PRIVATE CURL::libcurl glaze::glaze)
