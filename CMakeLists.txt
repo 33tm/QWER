@@ -4,6 +4,8 @@ project(QWER)
 
 set(CMAKE_CXX_STANDARD 23)
 
+set(CMAKE_EXE_LINKER_FLAGS "-static")
+
 include_directories(include)
 
 file(GLOB SOURCES src/*.cpp)
@@ -22,4 +24,4 @@ FetchContent_Declare(glaze
 
 FetchContent_MakeAvailable(glaze)
 
-target_link_libraries(QWER PRIVATE CURL::libcurl glaze::glaze)
+target_link_libraries(QWER CURL::libcurl glaze::glaze)

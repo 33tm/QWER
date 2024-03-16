@@ -1,6 +1,8 @@
 #ifndef RESOLVE_H
 #define RESOLVE_H
 
+#include <map>
+
 struct Resolution {
     std::string name;
     std::string version;
