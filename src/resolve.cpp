@@ -51,7 +51,7 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
 
     for (const std::string &response : responses) {
         Resolution resolution;
-        glz::read_json(resolution, response);
+        glz::read<glz::opts{.error_on_unknown_keys = false}>(resolution, response);
         resolutions.push_back(resolution);
     }
 
