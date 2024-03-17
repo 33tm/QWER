@@ -5,11 +5,9 @@
 #include "resolve.h"
 
 void install(const std::vector<Package> &packages) {
-    std::vector<Resolution> resolutions;
+    std::vector<Resolution> resolutions = resolve(packages);
 
-    resolutions = resolve(packages);
-
-    // for (const Resolution &resolution : resolutions) {
-    //     std::cout << resolution.name << "@" << resolution.version << std::endl;
-    // }
+    for (const Resolution &resolution : resolutions) {
+        std::cout << resolution.name << "@" << resolution.version << std::endl;
+    }
 }

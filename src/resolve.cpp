@@ -1,4 +1,5 @@
 #include <curl/curl.h>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -11,24 +12,15 @@ size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
     return size * nmemb;
 }
 
-// fix duplicate dependencies
 std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     CURL *handles[packages.size()];
     CURLM *curlm = curl_multi_init();
     std::vector<Resolution> resolutions;
     std::string responses[packages.size()];
 
-    // for (Package &package : packages) {
-    // TODO semver resolution
-    // mut package.version
-    // work on latest assumption
-    // continue;
-    // }
-
     for (size_t i = 0; i < packages.size(); i++) {
-        Package package = packages[i];
         handles[i] = curl_easy_init();
-        std::string url = "https://registry.npmjs.org/" + package.name + "/latest";
+        std::string url = "https://registry.npmjs.org/" + packages[i].name + "/latest";
         curl_easy_setopt(handles[i], CURLOPT_URL, url.c_str());
         curl_easy_setopt(handles[i], CURLOPT_WRITEFUNCTION, *write);
         curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
@@ -63,8 +55,8 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     }
 
     if (!dependencies.empty()) {
-        std::vector<Resolution> resolved = resolve(dependencies);
-        resolutions.insert(resolutions.end(), resolved.begin(), resolved.end());
+        std::vector<Resolution> nested = resolve(dependencies);
+        resolutions.insert(resolutions.end(), nested.begin(), nested.end());
     }
 
     return resolutions;
