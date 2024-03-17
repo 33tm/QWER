@@ -4,7 +4,9 @@ project(QWER)
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(CMAKE_EXE_LINKER_FLAGS "-static")
+if(WIN32)
+    set(CMAKE_EXE_LINKER_FLAGS "-static")
+endif()
 
 include_directories(include)
 

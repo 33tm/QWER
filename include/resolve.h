@@ -1,15 +1,13 @@
 #ifndef RESOLVE_H
 #define RESOLVE_H
 
-#include <map>
+#include <unordered_map>
 
 struct Resolution {
     std::string name;
     std::string version;
-    std::map<std::string, std::string> dependencies;
+    std::unordered_map<std::string, std::string> dependencies;
     struct {
-        std::string integrity;
-        std::string shasum;
         std::string tarball;
     } dist;
 };
