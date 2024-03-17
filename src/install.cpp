@@ -9,7 +9,7 @@ void install(const std::vector<Package> &packages) {
 
     resolutions = resolve(packages);
 
-    for (const Resolution &resolution : resolutions) {
-        std::cout << resolution.name << "@" << resolution.version << std::endl;
-    }
+    // for (const Resolution &resolution : resolutions) {
+    //     std::cout << resolution.name << "@" << resolution.version << std::endl;
+    // }
 }
