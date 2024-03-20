@@ -7,9 +7,6 @@ struct Resolution {
     std::string name;
     std::string version;
     std::unordered_map<std::string, std::string> dependencies;
-    struct {
-        std::string tarball;
-    } dist;
 };
 
 std::vector<Resolution> resolve(const std::vector<Package> &packages);
