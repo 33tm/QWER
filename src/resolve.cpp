@@ -7,8 +7,8 @@
 #include "install.h"
 #include "resolve.h"
 
-static size_t write(char *ptr, size_t size, size_t nmemb, std::string *userdata) {
-    userdata->append(ptr, size * nmemb);
+static size_t write(const char *ptr, size_t size, size_t nmemb, std::string *string) {
+    string->append(ptr, size * nmemb);
     return size * nmemb;
 }
 
