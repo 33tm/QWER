@@ -7,7 +7,7 @@
 #include "install.h"
 #include "resolve.h"
 
-static size_t write(const char *ptr, size_t size, size_t nmemb, std::string *string) {
+size_t toString(const char *ptr, size_t size, size_t nmemb, std::string *string) {
     string->append(ptr, size * nmemb);
     return size * nmemb;
 }
@@ -22,18 +22,18 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
         handles[i] = curl_easy_init();
         std::string url = "https://registry.npmjs.org/" + packages[i].name + "/latest";
         curl_easy_setopt(handles[i], CURLOPT_URL, url.c_str());
-        curl_easy_setopt(handles[i], CURLOPT_WRITEFUNCTION, *write);
+        curl_easy_setopt(handles[i], CURLOPT_WRITEFUNCTION, *toString);
         curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
         curl_multi_add_handle(curlm, handles[i]);
     }
 
     int remaining;
 
-    while (remaining) {
+    do {
         if (curl_multi_perform(curlm, &remaining)) {
             break;
         }
-    }
+    } while (remaining);
 
     for (CURL *handle : handles) {
         curl_multi_remove_handle(curlm, handle);
