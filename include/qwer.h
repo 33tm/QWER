@@ -23,4 +23,12 @@
 #define CPU "unknown"
 #endif
 
+#if defined(__GLIBC__)
+#define LIBC "glibc"
+#elif defined(__MUSL__)
+#define LIBC "musl"
+#else
+#define LIBC "unknown"
+#endif
+
 #endif

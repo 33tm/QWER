@@ -27,9 +27,9 @@ void install(const std::vector<Package> &packages) {
     create_directory("node_modules");
 
     for (size_t i = 0; i < resolutions.size(); i++) {
-        const auto &[name, version, os, cpu, dependencies, dist] = resolutions[i];
+        const auto &[name, version, os, cpu, libc, bin, dependencies, dist] = resolutions[i];
 
-        if ((!os.empty() && !find(OS, os)) || (!cpu.empty() && !find(CPU, cpu))) {
+        if ((!os.empty() && !find(OS, os)) || (!cpu.empty() && !find(CPU, cpu)) || (!libc.empty() && !find(LIBC, libc))) {
             continue;
         }
 
