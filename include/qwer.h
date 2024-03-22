@@ -1,7 +1,7 @@
 #ifndef QWER_H
 #define QWER_H
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #define OS "win32"
 #elif defined(__linux__)
 #define OS "linux"
@@ -11,7 +11,7 @@
 #define OS "unknown"
 #endif
 
-#if defined(__i386__)
+#ifdef __i386__
 #define CPU "ia32"
 #elif defined(__x86_64__)
 #define CPU "x64"
@@ -23,7 +23,7 @@
 #define CPU "unknown"
 #endif
 
-#if defined(__GLIBC__)
+#ifdef __GLIBC__
 #define LIBC "glibc"
 #elif defined(__MUSL__)
 #define LIBC "musl"

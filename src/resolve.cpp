@@ -1,5 +1,4 @@
 #include <curl/curl.h>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -7,7 +6,7 @@
 #include "install.h"
 #include "resolve.h"
 
-size_t toString(const char *ptr, size_t size, size_t nmemb, std::string *string) {
+static size_t toString(const char *ptr, size_t size, size_t nmemb, std::string *string) {
     string->append(ptr, size * nmemb);
     return size * nmemb;
 }
