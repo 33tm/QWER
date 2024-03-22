@@ -17,14 +17,15 @@ static size_t toFile(const char *ptr, size_t size, size_t nmemb, std::ofstream *
 }
 
 void install(const std::vector<Package> &packages) {
-    using std::filesystem::create_directory;
-
     std::vector<Resolution> resolutions = resolve(packages);
-    std::ofstream files[resolutions.size()];
-    std::vector<CURL *> handles(resolutions.size());
-    CURLM *curlm = curl_multi_init();
 
-    create_directory("node_modules");
+    CURLM *curlm = curl_multi_init();
+    std::vector<CURL *> handles(resolutions.size());
+    std::ofstream files[resolutions.size()];
+
+    if (!std::filesystem::exists("node_modules")) {
+        std::filesystem::create_directory("node_modules");
+    }
 
     for (size_t i = 0; i < resolutions.size(); i++) {
         const auto &[name, version, os, cpu, libc, bin, dependencies, dist] = resolutions[i];
@@ -34,11 +35,11 @@ void install(const std::vector<Package> &packages) {
         }
 
         if (name[0] == '@') {
-            create_directory("node_modules/" + name.substr(0, name.find('/')));
+            std::filesystem::create_directory("node_modules/" + name.substr(0, name.find('/')));
         }
 
         CURL *handle = curl_easy_init();
-        files[i].open("node_modules/" + name + ".tgz");
+        files[i].open("node_modules/" + name + ".tgz", std::ios::binary | std::ios::trunc);
         curl_easy_setopt(handle, CURLOPT_URL, dist.tarball.c_str());
         curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, *toFile);
         curl_easy_setopt(handle, CURLOPT_WRITEDATA, &files[i]);

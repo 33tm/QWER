@@ -14,7 +14,6 @@ static size_t toString(const char *ptr, size_t size, size_t nmemb, std::string *
 std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     CURL *handles[packages.size()];
     CURLM *curlm = curl_multi_init();
-    std::vector<Resolution> resolutions;
     std::string responses[packages.size()];
 
     for (size_t i = 0; i < packages.size(); i++) {
@@ -42,6 +41,7 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
     curl_multi_cleanup(curlm);
 
     std::vector<Package> dependencies;
+    std::vector<Resolution> resolutions;
 
     for (const std::string &response : responses) {
         Resolution resolution;
