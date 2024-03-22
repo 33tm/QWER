@@ -62,4 +62,18 @@ void install(const std::vector<Package> &packages) {
     }
 
     curl_multi_cleanup(curlm);
+
+    for (std::ofstream &file : files) {
+        file.close();
+    }
+
+    for (auto &file : std::filesystem::recursive_directory_iterator("node_modules")) {
+        if (file.is_directory() || file.path().extension() != ".tgz") {
+            continue;
+        }
+
+        // untar
+
+        std::filesystem::remove(file.path());
+    }
 }
