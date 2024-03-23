@@ -25,10 +25,8 @@
 
 #ifdef __GLIBC__
 #define LIBC "glibc"
-#elif defined(__MUSL__)
-#define LIBC "musl"
 #else
-#define LIBC "unknown"
+#define LIBC "musl"
 #endif
 
 #endif

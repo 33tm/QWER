@@ -45,9 +45,9 @@ std::vector<Resolution> resolve(const std::vector<Package> &packages) {
 
     for (const std::string &response : responses) {
         Resolution resolution;
-        glz::parse_error error = glz::read<glz::opts{.error_on_unknown_keys = false}>(resolution, response);
+        glz::parse_error error = glz::read < glz::opts{ .error_on_unknown_keys = false } > (resolution, response);
         for (const auto &[name, version] : resolution.dependencies) {
-            dependencies.push_back({name, version});
+            dependencies.push_back({ name, version });
         }
         resolutions.push_back(resolution);
     }

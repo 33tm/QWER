@@ -16,6 +16,8 @@ add_executable(QWER ${SOURCES})
 
 find_package(CURL REQUIRED)
 
+find_package(ZLIB REQUIRED)
+
 include(FetchContent)
 
 FetchContent_Declare(glaze
@@ -26,4 +28,4 @@ FetchContent_Declare(glaze
 
 FetchContent_MakeAvailable(glaze)
 
-target_link_libraries(QWER CURL::libcurl glaze::glaze)
+target_link_libraries(QWER CURL::libcurl ZLIB::ZLIB glaze::glaze)
