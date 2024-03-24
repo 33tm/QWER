@@ -1,7 +1,8 @@
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <vector>
-#include <iostream>
+
 #include <curl/curl.h>
 #include <zlib.h>
 
@@ -43,14 +44,6 @@ static bool find(const std::string &value, const std::vector<std::string> &array
 static size_t toFile(const char *ptr, size_t size, size_t nmemb, std::ofstream *stream) {
     stream->write(ptr, size * nmemb);
     return size * nmemb;
-}
-
-static unsigned int decimal(char octal[12]) {
-    unsigned int value = 0;
-    for (size_t i = 0; i < 10; i++) {
-        value = value * 8 + octal[i] - '0';
-    }
-    return value;
 }
 
 struct Header {
@@ -114,17 +107,15 @@ void install(const std::vector<Package> &packages) {
     }
 
     for (auto &file : std::filesystem::recursive_directory_iterator("node_modules")) {
-        std::filesystem::path tarball = file.path();
+        if (file.is_directory() || file.path().extension() != ".tgz") continue;
 
-        if (file.is_directory() || tarball.extension() != ".tgz") continue;
-
-        gzFile tgz = gzopen(tarball.c_str(), "rb");
+        gzFile tgz = gzopen(file.path().string().c_str(), "rb");
 
         unsigned int size;
         unsigned char buffer[16384];
         std::vector<unsigned char> data;
 
-        while ((size = gzread(tgz, buffer, sizeof(buffer)))) {
+        while (size = gzread(tgz, buffer, sizeof(buffer))) {
             data.insert(data.end(), buffer, buffer + size);
         }
 
@@ -132,25 +123,41 @@ void install(const std::vector<Package> &packages) {
 
         std::vector<unsigned char>::iterator base = data.begin();
 
-        while (true) {
+        while (base != data.end()) {
             std::vector<unsigned char> head(base, base + 512);
             Header *header = reinterpret_cast<Header *>(head.data());
             base += 512;
-            unsigned int size = decimal(header->size);
-            if (base + size > data.end()) break;
-            std::vector<unsigned char> payload(base, base + size);
-            base += size + 512 - size % 512;
 
-            std::filesystem::path path = tarball.parent_path() / tarball.filename().replace_extension() / std::string(header->name).substr(8);
-            std::filesystem::create_directories(path.parent_path());
+            if (header->type == '5') continue;
 
-            std::ofstream output(path);
+            int offset;
+            try {
+                offset = std::stoi(header->size, nullptr, 8);
+            } catch (std::invalid_argument) {
+                break;
+            };
+
+            std::vector<unsigned char> payload(base, base + offset);
+            base += offset + 512 - offset % 512;
+
+            std::filesystem::path temp = header->name;
+            std::filesystem::path path = file.path().parent_path() / header->name;
+
+            if (temp.filename() == "pax_global_header") continue;
+
+            while (temp.parent_path() != "") temp = temp.parent_path();
+
+            std::string final = path.string().replace(path.string().find(temp.string()), temp.string().size(), file.path().stem().string());
+
+            std::filesystem::create_directories(std::filesystem::path(final).parent_path());
+
+            std::ofstream output(final, std::ios::binary | std::ios::trunc);
             if (!output) continue;
 
-            output.write(reinterpret_cast<const char *>(payload.data()), size);
+            output.write(reinterpret_cast<const char *>(payload.data()), payload.size());
             output.close();
         }
 
-        std::filesystem::remove(tarball);
+        std::filesystem::remove(file.path());
     }
 }
