@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
-
+#include <iostream>
 #include <curl/curl.h>
 #include <zlib.h>
 
@@ -114,15 +114,17 @@ void install(const std::vector<Package> &packages) {
     }
 
     for (auto &file : std::filesystem::recursive_directory_iterator("node_modules")) {
-        if (file.is_directory() || file.path().extension() != ".tgz") continue;
+        std::filesystem::path tarball = file.path();
 
-        gzFile tgz = gzopen(file.path().c_str(), "rb");
+        if (file.is_directory() || tarball.extension() != ".tgz") continue;
+
+        gzFile tgz = gzopen(tarball.c_str(), "rb");
 
         unsigned int size;
         unsigned char buffer[16384];
         std::vector<unsigned char> data;
 
-        while (size = gzread(tgz, buffer, sizeof(buffer))) {
+        while ((size = gzread(tgz, buffer, sizeof(buffer)))) {
             data.insert(data.end(), buffer, buffer + size);
         }
 
@@ -139,16 +141,16 @@ void install(const std::vector<Package> &packages) {
             std::vector<unsigned char> payload(base, base + size);
             base += size + 512 - size % 512;
 
-            std::filesystem::path path = "node_modules" / file.path().stem() / std::string(header->name).substr(8);
+            std::filesystem::path path = tarball.parent_path() / tarball.filename().replace_extension() / std::string(header->name).substr(8);
             std::filesystem::create_directories(path.parent_path());
-            
+
             std::ofstream output(path);
-            if (!output) return;
+            if (!output) continue;
 
             output.write(reinterpret_cast<const char *>(payload.data()), size);
             output.close();
         }
 
-        std::filesystem::remove(file.path());
+        std::filesystem::remove(tarball);
     }
 }
