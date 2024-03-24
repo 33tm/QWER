@@ -1,6 +1,7 @@
-#include <curl/curl.h>
 #include <string>
 #include <vector>
+
+#include <curl/curl.h>
 
 #include "glaze/glaze.hpp"
 #include "install.h"

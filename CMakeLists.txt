@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 23)
 
 if(WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "-static")
+    set(ZLIB_LIBRARY "C:/msys64/ucrt64/lib/libz.a")
+    set(ZLIB_INCLUDE_DIR "C:/msys64/ucrt64/include")
 endif()
 
 include_directories(include)
