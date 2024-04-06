@@ -47,15 +47,15 @@ static size_t toFile(const char *ptr, size_t size, size_t nmemb, std::ofstream *
 }
 
 struct Header {
-    unsigned char name[100];
-    unsigned char mode[8];
-    unsigned char uid[8];
-    unsigned char gid[8];
-    unsigned char size[12];
-    unsigned char modifed[12];
-    unsigned char checksum[8];
-    unsigned char type;
-    unsigned char linkname[100];
+    char name[100];
+    char mode[8];
+    char uid[8];
+    char gid[8];
+    char size[12];
+    char modifed[12];
+    char checksum[8];
+    char type;
+    char linkname[100];
 };
 
 void install(const std::vector<Package> &packages) {
