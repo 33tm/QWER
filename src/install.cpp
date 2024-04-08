@@ -124,8 +124,7 @@ void install(const std::vector<Package> &packages) {
         std::vector<unsigned char>::iterator base = data.begin();
 
         while (base != data.end()) {
-            std::vector<unsigned char> head(base, base + 512);
-            Header *header = reinterpret_cast<Header *>(head.data());
+            Header *header = reinterpret_cast<Header *>(&*base);
             base += 512;
 
             if (header->type == '5') continue;
