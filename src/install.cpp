@@ -113,7 +113,7 @@ void install(const std::vector<Package> &packages) {
 
         unsigned int size;
         unsigned char buffer[16384];
-        std::vector<unsigned char> data;
+        std::vector<char> data;
 
         while (size = gzread(tgz, buffer, sizeof(buffer))) {
             data.insert(data.end(), buffer, buffer + size);
@@ -121,7 +121,7 @@ void install(const std::vector<Package> &packages) {
 
         gzclose(tgz);
 
-        std::vector<unsigned char>::iterator base = data.begin();
+        std::vector<char>::iterator base = data.begin();
 
         while (base != data.end()) {
             Header *header = reinterpret_cast<Header *>(&*base);
@@ -136,7 +136,7 @@ void install(const std::vector<Package> &packages) {
                 break;
             };
 
-            std::vector<unsigned char> payload(base, base + offset);
+            std::vector<char> payload(base, base + offset);
             base += offset + 512 - offset % 512;
 
             std::filesystem::path temp = header->name;
@@ -153,7 +153,7 @@ void install(const std::vector<Package> &packages) {
             std::ofstream output(final, std::ios::binary | std::ios::trunc);
             if (!output) continue;
 
-            output.write(reinterpret_cast<const char *>(payload.data()), payload.size());
+            output.write(payload.data(), payload.size());
             output.close();
         }
 
